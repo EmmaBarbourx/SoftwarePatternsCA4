@@ -22,20 +22,16 @@ public class Order {
     @ManyToOne
     private Customer customer;
 
-    // One order can have many order items
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderItem> orderItems;
-
     public Order() {
     }
 
-    public Order(LocalDateTime orderDate, String status, String shippingAddress, double totalCost, Customer customer, List<OrderItem> orderItems) {
+    public Order(LocalDateTime orderDate, String status, String shippingAddress, double totalCost, Customer customer) {
         this.orderDate = orderDate;
         this.status = status;
         this.shippingAddress = shippingAddress;
         this.totalCost = totalCost;
         this.customer = customer;
-        this.orderItems = orderItems;
+        
     }
 
     // Getters and Setters
@@ -75,12 +71,7 @@ public class Order {
     public void setCustomer(Customer customer) {
         this.customer = customer;
     }
-    public List<OrderItem> getOrderItems() {
-        return orderItems;
-    }
-    public void setOrderItems(List<OrderItem> orderItems) {
-        this.orderItems = orderItems;
-    }
+   
 
     @Override
     public String toString() {
