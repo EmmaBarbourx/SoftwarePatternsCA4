@@ -2,11 +2,16 @@ package com.example.softwarePatternsCA4.service;
 
 import com.example.softwarePatternsCA4.entity.Book;
 import com.example.softwarePatternsCA4.repository.BookRepository;
-import com.example.softwarePatternsCA4.strategy.SortByAuthorStrategy;
-import com.example.softwarePatternsCA4.strategy.SortByPriceStrategy;
-import com.example.softwarePatternsCA4.strategy.SortByPublisherStrategy;
-import com.example.softwarePatternsCA4.strategy.SortByTitleStrategy;
-import com.example.softwarePatternsCA4.strategy.SortStrategy;
+import com.example.softwarePatternsCA4.search.strategy.AuthorSearchStrategy;
+import com.example.softwarePatternsCA4.search.strategy.BookSearchStrategy;
+import com.example.softwarePatternsCA4.search.strategy.CategorySearchStrategy;
+import com.example.softwarePatternsCA4.search.strategy.PublisherSearchStrategy;
+import com.example.softwarePatternsCA4.search.strategy.TitleSearchStrategy;
+import com.example.softwarePatternsCA4.sort.strategy.SortByAuthorStrategy;
+import com.example.softwarePatternsCA4.sort.strategy.SortByPriceStrategy;
+import com.example.softwarePatternsCA4.sort.strategy.SortByPublisherStrategy;
+import com.example.softwarePatternsCA4.sort.strategy.SortByTitleStrategy;
+import com.example.softwarePatternsCA4.sort.strategy.SortStrategy;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,6 +55,7 @@ public class BookService {
         bookRepository.deleteById(id);
     }
     
+    // To sort books
     public List<Book> getSortedBooks(String sortCriterion) {
         List<Book> books = getAllBooks();
         SortStrategy strategy;
@@ -66,5 +72,26 @@ public class BookService {
             strategy = new SortByTitleStrategy();
         }
         return strategy.sort(books);
+    }
+    
+    // To search through books 
+    public List<Book> searchBooks(String criterion, String searchQuery) {
+        List<Book> books = getAllBooks();
+        BookSearchStrategy strategy;
+
+        if ("title".equalsIgnoreCase(criterion)) {
+            strategy = new TitleSearchStrategy();
+        } else if ("category".equalsIgnoreCase(criterion)) {
+            strategy = new CategorySearchStrategy();
+        } else if ("author".equalsIgnoreCase(criterion)) {
+            strategy = new AuthorSearchStrategy();
+        } else if ("publisher".equalsIgnoreCase(criterion)) {
+            strategy = new PublisherSearchStrategy();
+        } else {
+            // Default to title search 
+            strategy = new TitleSearchStrategy();
+        }
+
+        return strategy.search(books, searchQuery);
     }
 }

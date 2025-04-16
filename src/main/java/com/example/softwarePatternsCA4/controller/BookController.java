@@ -29,6 +29,13 @@ public class BookController {
         return ResponseEntity.ok(sortedBooks);
     }
     
+    // Search books by criteria and query
+    @GetMapping("/search")
+    public ResponseEntity<List<Book>> searchBooks(@RequestParam("criterion") String criterion,@RequestParam("query") String query) {
+        List<Book> results = bookService.searchBooks(criterion, query);
+        return ResponseEntity.ok(results);
+    }
+    
     // Add a new book
     @PostMapping
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
