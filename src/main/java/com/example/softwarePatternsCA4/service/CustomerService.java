@@ -15,11 +15,10 @@ public class CustomerService {
     private CustomerRepository customerRepository;
 
     // Register a new customer
-    public Customer registerCustomer(String username, String password, 
-            String shippingAddress, String paymentMethod, 
-            String emailAddress, String userRole) {
-    	Customer customer = CustomerFactory.getInstance().createCustomer(
-                userRole, username, password, shippingAddress, paymentMethod, emailAddress);
+    public Customer registerCustomer(Customer customer) {
+    	Customer newCustomer = CustomerFactory.getInstance().createCustomer(
+                customer.getUserRole(), customer.getUsername(), customer.getPassword(), customer.getShippingAddress(), 
+                customer.getPaymentMethod(), customer.getEmailAddress());
         return customerRepository.save(customer);
     }
 
