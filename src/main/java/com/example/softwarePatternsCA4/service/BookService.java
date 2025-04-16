@@ -2,6 +2,12 @@ package com.example.softwarePatternsCA4.service;
 
 import com.example.softwarePatternsCA4.entity.Book;
 import com.example.softwarePatternsCA4.repository.BookRepository;
+import com.example.softwarePatternsCA4.strategy.SortByAuthorStrategy;
+import com.example.softwarePatternsCA4.strategy.SortByPriceStrategy;
+import com.example.softwarePatternsCA4.strategy.SortByPublisherStrategy;
+import com.example.softwarePatternsCA4.strategy.SortByTitleStrategy;
+import com.example.softwarePatternsCA4.strategy.SortStrategy;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -42,5 +48,23 @@ public class BookService {
     // Delete a book from the catalogue
     public void deleteBook(int id) {
         bookRepository.deleteById(id);
+    }
+    
+    public List<Book> getSortedBooks(String sortCriterion) {
+        List<Book> books = getAllBooks();
+        SortStrategy strategy;
+        if ("price".equalsIgnoreCase(sortCriterion)) {
+            strategy = new SortByPriceStrategy();
+        } else if ("title".equalsIgnoreCase(sortCriterion)) {
+            strategy = new SortByTitleStrategy();
+        } else if ("author".equalsIgnoreCase(sortCriterion)) {
+            strategy = new SortByAuthorStrategy();
+        } else if ("publisher".equalsIgnoreCase(sortCriterion)) {
+            strategy = new SortByPublisherStrategy();
+        } else {
+            // Default to sort by title
+            strategy = new SortByTitleStrategy();
+        }
+        return strategy.sort(books);
     }
 }

@@ -22,6 +22,13 @@ public class BookController {
         return ResponseEntity.ok(books);
     }
     
+    // Sort books by sorting criteria
+    @GetMapping("/sort")
+    public ResponseEntity<List<Book>> getSortedBooks(@RequestParam("criterion") String criterion) {
+        List<Book> sortedBooks = bookService.getSortedBooks(criterion);
+        return ResponseEntity.ok(sortedBooks);
+    }
+    
     // Add a new book
     @PostMapping
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
