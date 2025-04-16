@@ -1,6 +1,7 @@
 package com.example.softwarePatternsCA4.service;
 
 import com.example.softwarePatternsCA4.entity.Customer;
+import com.example.softwarePatternsCA4.factory.CustomerFactory;
 import com.example.softwarePatternsCA4.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,11 @@ public class CustomerService {
     private CustomerRepository customerRepository;
 
     // Register a new customer
-    public Customer registerCustomer(Customer customer) {
+    public Customer registerCustomer(String username, String password, 
+            String shippingAddress, String paymentMethod, 
+            String emailAddress, String userRole) {
+    	Customer customer = CustomerFactory.getInstance().createCustomer(
+                userRole, username, password, shippingAddress, paymentMethod, emailAddress);
         return customerRepository.save(customer);
     }
 

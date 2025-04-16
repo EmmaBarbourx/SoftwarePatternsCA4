@@ -12,7 +12,7 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    // Core Attributes (from brief)
+ 
     private String username;
     private String password;       // Need to secure with spring security
     private String shippingAddress;
