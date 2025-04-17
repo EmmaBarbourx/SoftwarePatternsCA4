@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 @Table(name = "orders")  // "orders" avoids conflicts
 public class Order {
@@ -12,25 +14,38 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    //Attributes 
+    // Attributes 
     private LocalDateTime orderDate;
     private String status;         // "pending" or "completed"
     private String shippingAddress;
     private double totalCost;
+    private double discount;              
+    private int loyaltyPointsEarned;       
+    private int loyaltyPointsRedeemed; 
 
     // an order is associated with a Customer
     @ManyToOne
     private Customer customer;
+    
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "order_id")
+    @JsonManagedReference
+    private List<OrderItem> orderItems;
 
     public Order() {
     }
 
-    public Order(LocalDateTime orderDate, String status, String shippingAddress, double totalCost, Customer customer) {
+    public Order(LocalDateTime orderDate, String status, String shippingAddress, double totalCost, Customer customer,List<OrderItem> orderItems,
+            double discount,int loyaltyPointsEarned, int loyaltyPointsRedeemed) {
         this.orderDate = orderDate;
         this.status = status;
         this.shippingAddress = shippingAddress;
         this.totalCost = totalCost;
         this.customer = customer;
+        this.orderItems = orderItems;
+        this.discount = discount;
+        this.loyaltyPointsEarned = loyaltyPointsEarned;
+        this.loyaltyPointsRedeemed = loyaltyPointsRedeemed;
         
     }
 
@@ -71,6 +86,33 @@ public class Order {
     public void setCustomer(Customer customer) {
         this.customer = customer;
     }
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
+    }
+
+    public double getDiscount() {
+        return discount;
+    }
+    public void setDiscount(double discount) {
+        this.discount = discount;
+    }
+
+    public int getLoyaltyPointsEarned() {
+        return loyaltyPointsEarned;
+    }
+    public void setLoyaltyPointsEarned(int loyaltyPointsEarned) {
+        this.loyaltyPointsEarned = loyaltyPointsEarned;
+    }
+
+    public int getLoyaltyPointsRedeemed() {
+        return loyaltyPointsRedeemed;
+    }
+    public void setLoyaltyPointsRedeemed(int loyaltyPointsRedeemed) {
+        this.loyaltyPointsRedeemed = loyaltyPointsRedeemed;
+    }
    
 
     @Override
@@ -80,6 +122,9 @@ public class Order {
                ", status='" + status + '\'' +
                ", shippingAddress='" + shippingAddress + '\'' +
                ", totalCost=" + totalCost +
+                ", discount=" + discount +
+               ", loyaltyPointsEarned=" + loyaltyPointsEarned +
+               ", loyaltyPointsRedeemed=" + loyaltyPointsRedeemed +
                ", customer=" + (customer != null ? customer.getUsername() : "null") +
                '}';
     }

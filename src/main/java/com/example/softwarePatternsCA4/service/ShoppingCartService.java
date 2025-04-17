@@ -48,7 +48,9 @@ public class ShoppingCartService {
 
     // Delete a shopping cart
     public void deleteCart(int id) {
-        shoppingCartRepository.deleteById(id);
+    	ShoppingCart cart = shoppingCartRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found: " + id));
+            shoppingCartRepository.delete(cart);
     }
     
     // Add items to shopping cart

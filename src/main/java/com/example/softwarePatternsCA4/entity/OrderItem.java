@@ -1,5 +1,7 @@
 package com.example.softwarePatternsCA4.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +18,7 @@ public class OrderItem {
     
     // Each OrderItem is linked to an Order
     @ManyToOne
+    @JsonBackReference
     private Order order;  
 
     // Reference to the Book being purchased

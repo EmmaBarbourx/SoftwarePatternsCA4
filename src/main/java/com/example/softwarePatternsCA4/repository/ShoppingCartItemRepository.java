@@ -1,5 +1,6 @@
 package com.example.softwarePatternsCA4.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,8 @@ import com.example.softwarePatternsCA4.entity.ShoppingCartItem;
 public interface ShoppingCartItemRepository extends JpaRepository<ShoppingCartItem, Integer> {
 	
 	Optional<ShoppingCartItem> findByShoppingCartAndBook(ShoppingCart cart, Book book);
+	
+	List<ShoppingCartItem> findByShoppingCartId(int shoppingCartId);
   
 }
 

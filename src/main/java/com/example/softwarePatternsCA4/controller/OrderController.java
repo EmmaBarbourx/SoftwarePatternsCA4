@@ -43,4 +43,12 @@ public class OrderController {
         orderService.deleteOrder(id);
         return ResponseEntity.ok("Order deleted successfully");
     }
+    
+    // Checkout order
+    @PostMapping("/checkout/{cartId}")
+    public ResponseEntity<Order> checkout(@PathVariable int cartId, 
+    		@RequestParam(name="redeemPoints", defaultValue="0") int redeemPoints) {
+        Order order = orderService.processCheckout(cartId, redeemPoints);
+        return ResponseEntity.ok(order);
+    }
 }

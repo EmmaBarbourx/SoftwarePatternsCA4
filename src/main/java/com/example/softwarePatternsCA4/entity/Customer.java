@@ -19,6 +19,7 @@ public class Customer {
     private String paymentMethod; 
     private String emailAddress;
     private String userRole;       // customer or admin
+    private int loyaltyPoints = 0;
 
     public Customer() {
     }
@@ -75,6 +76,12 @@ public class Customer {
     public void setUserRole(String userRole) {
         this.userRole = userRole;
     }
+    public int getLoyaltyPoints() {
+        return loyaltyPoints;
+    }
+    public void setLoyaltyPoints(int pts) {
+        this.loyaltyPoints = pts;
+    }
 
     @Override
     public String toString() {
@@ -84,6 +91,7 @@ public class Customer {
                ", paymentMethod='" + paymentMethod + '\'' +
                ", emailAddress='" + emailAddress + '\'' +
                ", userRole='" + userRole + '\'' +
+                ", loyaltyPoints=" + loyaltyPoints +
                '}';
     }
 }
