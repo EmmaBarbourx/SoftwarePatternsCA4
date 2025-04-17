@@ -34,4 +34,25 @@ public class ShoppingCartController {
         shoppingCartService.deleteCart(id);
         return ResponseEntity.ok("Shopping cart deleted successfully");
     }
+    
+    // Add item to shopping cart
+    @PostMapping("/{cartId}/items")
+    public ResponseEntity<Void> addItemToCart(@PathVariable int cartId,@RequestParam int bookId,@RequestParam int quantity) {
+        shoppingCartService.addItemToCart(cartId, bookId, quantity);
+        return ResponseEntity.ok().build();
+    }
+    
+    // Remove item from shopping cart
+    @DeleteMapping("/{cartId}/items/{bookId}")
+    public ResponseEntity<Void> removeItemFromCart(@PathVariable int cartId,@PathVariable int bookId) {
+        shoppingCartService.removeItemFromCart(cartId, bookId);
+        return ResponseEntity.ok().build();
+    }
+    
+    // Update quantity of item in shopping cart
+    @PutMapping("/{cartId}/items/{bookId}")
+    public ResponseEntity<Void> updateItemQuantity(@PathVariable int cartId,@PathVariable int bookId,@RequestParam int quantity) {
+        shoppingCartService.updateItemQuantity(cartId, bookId, quantity);
+        return ResponseEntity.ok().build();
+    }
 }
