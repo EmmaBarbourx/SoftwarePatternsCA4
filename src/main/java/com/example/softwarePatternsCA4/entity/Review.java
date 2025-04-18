@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,7 +16,7 @@ public class Review {
     private int id;
 
     // Attributes 
-    private int rating;  // Scale of 1–5
+    private Integer rating;  // Scale of 1–5
     private String comment;
     private LocalDateTime reviewDate;
 
@@ -28,7 +29,7 @@ public class Review {
     public Review() {
     }
 
-    public Review(int rating, String comment, LocalDateTime reviewDate, Customer customer, Book book) {
+    public Review(Integer rating, String comment, LocalDateTime reviewDate, Customer customer, Book book) {
         this.rating = rating;
         this.comment = comment;
         this.reviewDate = reviewDate;
@@ -43,10 +44,10 @@ public class Review {
     public void setId(int id) {
         this.id = id;
     }
-    public int getRating() {
+    public Integer getRating() {
         return rating;
     }
-    public void setRating(int rating) {
+    public void setRating(Integer rating) {
         this.rating = rating;
     }
     public String getComment() {

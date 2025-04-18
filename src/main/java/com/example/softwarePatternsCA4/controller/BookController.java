@@ -22,6 +22,14 @@ public class BookController {
         return ResponseEntity.ok(books);
     }
     
+    // Get book by Id
+    @GetMapping("/{id}")
+    public ResponseEntity<Book> getBookById(@PathVariable int id) {
+        return bookService.getBookById(id)
+                          .map(ResponseEntity::ok)
+                          .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    
     // Sort books by sorting criteria
     @GetMapping("/sort")
     public ResponseEntity<List<Book>> getSortedBooks(@RequestParam("criterion") String criterion) {

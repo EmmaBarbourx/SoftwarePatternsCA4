@@ -21,11 +21,12 @@ public class Book {
     private String isbnNumber;
     private String associatedImage;
     private int stockLevel;        // To manage inventory
+    private double averageRating = 0.0;
 
     public Book() {
     }
 
-    public Book(String title, String author, String publisher, double price, String category, String isbnNumber, String associatedImage, int stockLevel) {
+    public Book(String title, String author, String publisher, double price, String category, String isbnNumber, String associatedImage, int stockLevel, double averageRating) {
         this.title = title;
         this.author = author;
         this.publisher = publisher;
@@ -34,6 +35,7 @@ public class Book {
         this.isbnNumber = isbnNumber;
         this.associatedImage = associatedImage;
         this.stockLevel = stockLevel;
+        this.averageRating = averageRating;
     }
 
     // Getters and Setters
@@ -91,6 +93,12 @@ public class Book {
     public void setStockLevel(int stockLevel) {
         this.stockLevel = stockLevel;
     }
+    public double getAverageRating() {
+        return averageRating;
+    }
+    public void setAverageRating(double averageRating) {
+        this.averageRating = averageRating;
+    }
 
     @Override
     public String toString() {
@@ -103,6 +111,7 @@ public class Book {
                ", isbnNumber='" + isbnNumber + '\'' +
                ", associatedImage='" + associatedImage + '\'' +
                ", stockLevel=" + stockLevel +
+               ", averageRating=" + averageRating +
                '}';
     }
 }
