@@ -1,5 +1,8 @@
 package com.example.softwarePatternsCA4.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,7 +17,8 @@ public class Customer {
 
  
     private String username;
-    private String password;       // Need to secure with spring security
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;       
     private String shippingAddress;
     private String paymentMethod; 
     private String emailAddress;

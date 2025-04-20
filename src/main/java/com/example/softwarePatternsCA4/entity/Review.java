@@ -1,6 +1,7 @@
 package com.example.softwarePatternsCA4.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,7 +24,7 @@ public class Review {
     @ManyToOne
     private Customer customer; // Who submitted the review
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Book book; // Which book is being reviewed
 
     public Review() {

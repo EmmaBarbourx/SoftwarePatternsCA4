@@ -37,7 +37,7 @@ public class ReviewService {
             throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
 
-        // 2) Fetch the real Customer and Book
+        // Fetch the real Customer and Book
         int customerId = review.getCustomer().getId();
         int bookId     = review.getBook().getId();
 
@@ -54,10 +54,18 @@ public class ReviewService {
             review.setReviewDate(LocalDateTime.now());
         }
 
-        // Save & fire event
+        // Save 
         Review saved = reviewRepository.save(review);
-        publisher.publishEvent(new ReviewCreatedEvent(saved));
-        return saved;
+
+        // immediately reload by ID so JPA will re-fetch full Customer & Book
+        Review full = reviewRepository
+            .findById(saved.getId())
+            .orElse(saved);
+
+        // Fire event on the fully-loaded instance
+        publisher.publishEvent(new ReviewCreatedEvent(full));
+
+        return full;
     }
     
     // Retrieve all reviews
@@ -85,12 +93,28 @@ public class ReviewService {
                         ? updatedReview.getReviewDate()
                         : LocalDateTime.now()
                     );
-                    r.setCustomer(updatedReview.getCustomer());
-                    r.setBook(updatedReview.getBook());
+                    
+                    int custId = updatedReview.getCustomer().getId();
+                    Customer realCust = customerRepository.findById(custId)
+                        .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + custId));
+                    r.setCustomer(realCust);
+
+                    int bookId = updatedReview.getBook().getId();
+                    Book realBook = bookRepository.findById(bookId)
+                        .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
+                    r.setBook(realBook);
+                    
                     Review saved = reviewRepository.save(r);
-                    // re-fire the event so average is updated on edits, too
-                    publisher.publishEvent(new ReviewCreatedEvent(saved));
-                    return saved;
+
+                    //  immediately reload by ID 
+                    Review full = reviewRepository
+                        .findById(saved.getId())
+                        .orElse(saved);
+
+                    // Re-fire event on fully-loaded instance
+                    publisher.publishEvent(new ReviewCreatedEvent(full));
+
+                    return full;
                 })
                 .orElseThrow(() -> new IllegalArgumentException("Review not found: " + id));
         }
