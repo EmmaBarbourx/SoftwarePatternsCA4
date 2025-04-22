@@ -1,7 +1,10 @@
 package com.example.softwarePatternsCA4.service;
 
+import com.example.softwarePatternsCA4.admin.BookAdminOps;
 import com.example.softwarePatternsCA4.entity.Book;
 import com.example.softwarePatternsCA4.repository.BookRepository;
+import com.example.softwarePatternsCA4.repository.OrderItemRepository;
+import com.example.softwarePatternsCA4.repository.ReviewRepository;
 import com.example.softwarePatternsCA4.search.strategy.AuthorSearchStrategy;
 import com.example.softwarePatternsCA4.search.strategy.BookSearchStrategy;
 import com.example.softwarePatternsCA4.search.strategy.CategorySearchStrategy;
@@ -19,10 +22,16 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class BookService {
+public class BookService implements BookAdminOps {
 
 	@Autowired
     private BookRepository bookRepository;
+	
+	@Autowired
+    private ReviewRepository reviewRepository;
+	
+	@Autowired 
+	private OrderItemRepository  orderItemRepository;
 
     // Retrieve all books in the catalogue
     public List<Book> getAllBooks() {
@@ -43,14 +52,19 @@ public class BookService {
     public Book updateBook(int id, Book updatedBook) {
         return bookRepository.findById(id)
             .map(book -> {
-                book.setTitle(updatedBook.getTitle());
-                book.setAuthor(updatedBook.getAuthor());
-                book.setPublisher(updatedBook.getPublisher());
-                book.setPrice(updatedBook.getPrice());
-                book.setCategory(updatedBook.getCategory());
-                book.setIsbnNumber(updatedBook.getIsbnNumber());
-                book.setAssociatedImage(updatedBook.getAssociatedImage());
-                book.setStockLevel(updatedBook.getStockLevel());
+            	
+
+                if (updatedBook.getTitle()          != null) book.setTitle(updatedBook.getTitle());
+                if (updatedBook.getAuthor()         != null) book.setAuthor(updatedBook.getAuthor());
+                if (updatedBook.getPublisher()      != null) book.setPublisher(updatedBook.getPublisher());
+                if (updatedBook.getPrice()          != 0.0) book.setPrice(updatedBook.getPrice());
+                if (updatedBook.getCategory()       != null) book.setCategory(updatedBook.getCategory());
+                if (updatedBook.getIsbnNumber()     != null) book.setIsbnNumber(updatedBook.getIsbnNumber());
+                if (updatedBook.getAssociatedImage()!= null) book.setAssociatedImage(updatedBook.getAssociatedImage());
+
+                // stockLevel can be 0, so only set when caller sends a non negative value
+                if (updatedBook.getStockLevel() >= 0) book.setStockLevel(updatedBook.getStockLevel());
+                
                 return bookRepository.save(book);
             })
             .orElse(null);
@@ -58,6 +72,8 @@ public class BookService {
 
     // Delete a book from the catalogue
     public void deleteBook(int id) {
+    	orderItemRepository.deleteByBookId(id);
+    	reviewRepository.deleteByBookId(id);
         bookRepository.deleteById(id);
     }
     
@@ -99,5 +115,21 @@ public class BookService {
         }
 
         return strategy.search(books, searchQuery);
+    }
+
+    @Override
+    public Book adjustStock(int id, int delta) {
+        return bookRepository.findById(id)
+                .map(b -> {
+                    int newLevel = b.getStockLevel() + delta;
+                    if (newLevel < 0) {
+                        throw new IllegalArgumentException(
+                            "Resulting stock would be negative (" + newLevel + ")");
+                    }
+                    b.setStockLevel(newLevel);
+                    return bookRepository.save(b);
+                })
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "Book not found: " + id));
     }
 }

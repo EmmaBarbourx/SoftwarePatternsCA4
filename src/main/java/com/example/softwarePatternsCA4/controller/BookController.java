@@ -44,7 +44,7 @@ public class BookController {
         return ResponseEntity.ok(results);
     }
     
-    // Add a new book
+    /* Add a new book
     @PostMapping
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
         Book savedBook = bookService.addBook(book);
@@ -63,5 +63,5 @@ public class BookController {
     public ResponseEntity<String> deleteBook(@PathVariable int id) {
         bookService.deleteBook(id);
         return ResponseEntity.ok("Book deleted successfully");
-    }
+    } */
 }

@@ -107,5 +107,9 @@ public class OrderService {
 
         return saved;
     }
+    
+    public List<Order> getOrdersByCustomerId(int customerId) {
+        return orderRepository.findByCustomerId(customerId);
+    }
 }
 
