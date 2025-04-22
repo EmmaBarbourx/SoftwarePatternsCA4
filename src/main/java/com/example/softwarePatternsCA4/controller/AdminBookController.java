@@ -28,7 +28,7 @@ public class AdminBookController {
     
     @PostMapping
     public ResponseEntity<?> add(@RequestBody Book b,@RequestHeader("X-Username") String u,@RequestHeader("X-Password") String p) {
-        proxy.verifyAdmin(u, p);               // 1‑line check
+        proxy.verifyAdmin(u, p);              
         return ResponseEntity.ok(proxy.addBook(b));
     }
 
