@@ -12,8 +12,150 @@
 
 <body class="container py-4">
 
-    <h1>Book Details</h1> 
+    <a href="catalogue.html" class="btn btn-link mb-3">&larr; back to catalogue</a>
+    
+    <!-- book header -->
+  <div class="row">
+    <div class="col-md-3">
+      <img id="cover" class="img-fluid rounded shadow" alt="cover">
+    </div>
+    <div class="col-md-9">
+      <h2 id="title"></h2>
+      <p class="mb-1"><strong>Author:</strong> <span id="author"></span></p>
+      <p class="mb-1"><strong>Publisher:</strong> <span id="publisher"></span></p>
+      <p class="mb-1"><strong>Category:</strong> <span id="category"></span></p>
+      <p class="mb-1"><strong>ISBN:</strong> <span id="isbn"></span></p>
+      <p class="mb-1"><strong>Price:</strong> €<span id="price"></span></p>
+      <p><strong>Average rating:</strong> <span id="avg"></span>/5</p>
+
+      <button class="btn btn-success" onclick="addToCart()">Add to cart</button>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- reviews list -->
+  <h4>Reviews</h4>
+  <ul id="revList" class="list-group mb-4"></ul>
+
+  <!-- new review form -->
+  <h5>Add your review</h5>
+  <div class="row g-2 align-items-center mb-2">
+    <div class="col-auto">
+      <label for="rating" class="col-form-label">Rating</label>
+    </div>
+    <div class="col-auto">
+      <select id="rating" class="form-select">
+        <option value="5">5</option>
+        <option value="4">4</option>
+        <option value="3">3</option>
+        <option value="2">2</option>
+        <option value="1">1</option>
+      </select>
+    </div>
+    <div class="col-12">
+      <textarea id="comment" rows="2" class="form-control"
+                placeholder="Write a few words…"></textarea>
+    </div>
+  </div>
+  <button class="btn btn-primary mb-3" onclick="postReview()">Submit review</button>
+  <p id="msg" class="text-danger"></p>
     
     <script src="app.js"></script>
+    
+    <script>
+   
+    const params = new URLSearchParams(location.search);
+    const bookId = params.get('id');      // ?id=7  comes from catalogue row click
+    if (!bookId) location = 'catalogue.html';   // safety net
+
+    // load everything on first paint
+    init();
+    async function init(){
+      try{
+        const book = await api(`/api/books/${bookId}`);
+        showBook(book);
+        await loadReviews();
+      }catch(err){
+        alert(err.message);
+      }
+    }
+
+    function showBook(b){
+      qs('#title').textContent      = b.title;
+      qs('#author').textContent     = b.author;
+      qs('#publisher').textContent  = b.publisher;
+      qs('#category').textContent   = b.category;
+      qs('#isbn').textContent       = b.isbnNumber;
+      qs('#price').textContent      = b.price.toFixed(2);
+      qs('#avg').textContent        = b.averageRating?.toFixed(1) || '—';
+      const img = qs('#cover');
+      img.src   = b.associatedImage || 'https://via.placeholder.com/200x300?text=No+Image';
+      img.alt   = b.title + ' cover';
+    }
+
+    async function loadReviews(){
+      const revs = await api(`/api/reviews?bookId=${bookId}`);
+      const lis  = revs.map(r => `
+        <li class="list-group-item">
+          <strong>${r.rating}/5</strong> – ${r.comment}
+        </li>`).join('');
+      byId('revList').innerHTML = lis || '<li class="list-group-item">No reviews yet.</li>';
+    }
+
+    async function postReview(){
+      const user = sessionStorage.user;
+      if (!user){ byId('msg').textContent = 'Log in first.'; return; }
+
+      const rating = +byId('rating').value;
+      const text   = byId('comment').value.trim();
+      if (!text){ byId('msg').textContent = 'Please write a comment.'; return; }
+
+      try{
+        await api('/api/reviews', {
+          method: 'POST',
+          body: JSON.stringify({
+            rating,
+            comment : text,
+            book    : { id: bookId },           // simple reference
+            customer: { id: Number(sessionStorage.userId) } // backend finds the customer
+          })
+        });
+        byId('comment').value = '';
+        byId('msg').textContent = '';
+        await loadReviews();                    // refresh list + avg rating
+        const book = await api(`/api/books/${bookId}`);
+        showBook(book);
+      }catch(err){
+        byId('msg').textContent = err.message;
+      }
+    }
+
+    async function addToCart(){
+      const user = sessionStorage.user;
+      if (!user){ alert('Log in first.'); return; }
+
+      // find or create cart id in session
+      let cartId = sessionStorage.cartId;
+      if (!cartId){
+        const cart = await api('/api/carts', { 
+        method:'POST',
+          body: JSON.stringify({
+        customer: { id: Number(sessionStorage.userId) } 
+      })
+    });
+        cartId = cart.id;
+        sessionStorage.cartId = cartId;
+      }
+
+      // POST item
+      await api(`/api/carts/${cartId}/items?bookId=${bookId}&quantity=1`, {
+        method:'POST',
+        
+      });
+      alert('Added to cart!');
+    }
+  </script> 
+    
 </body>
 </html>

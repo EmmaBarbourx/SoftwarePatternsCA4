@@ -1,7 +1,25 @@
 function api(url, opts = {}) {
-  const base = { headers: { 'Content-Type': 'application/json', ...(opts.headers||{}) } };
-  return fetch(url, { ...base, ...opts })
-        .then(r => r.ok ? r.json() : r.text().then(t => { throw new Error(t); }));
+  const hasBody = opts.body !== undefined;
+
+  
+  const baseHeaders = hasBody
+        ? { 'Content-Type': 'application/json' }
+        : {};
+
+  return fetch(url, {
+           ...opts,
+           headers: { ...baseHeaders, ...(opts.headers || {}) }
+         })
+    .then(async r => {
+      if (!r.ok) {                      
+        const txt = await r.text();
+        throw new Error(txt || r.statusText);
+      }
+
+     
+      const txt = await r.text();        
+      return txt ? JSON.parse(txt) : null;
+    });
 }
 
 function qs(sel)  { return document.querySelector(sel); }

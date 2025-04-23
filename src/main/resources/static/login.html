@@ -53,26 +53,32 @@
       const p = byId('pwd').value;
       const admin = byId('isAdmin').checked;
 
-      if (!u || !p) { byId('msg').textContent = 'Please enter both fields'; return; }
-
-      // save creds temporarily
-      if (admin) {
-        sessionStorage.adminUser = u;
-        sessionStorage.adminPwd  = p;
-      } else {
-        sessionStorage.user = u;          
+      if (!u || !p) { byId('msg').textContent = 'Please enter both fields'; 
+      return; 
       }
 
+
       try {
-        // minimal ping to verify credentials
+        //verify credentials
         if (admin) {
+        
+        sessionStorage.adminUser = u;
+          sessionStorage.adminPwd  = p;
+        
           await api('/api/admin/books/customers', withAuth());     
         } else {
+        
         // login call (checks username + BCrypt hash on the server)
         await api('/api/customers/login', {
         method : 'POST',
          body   : JSON.stringify({ username: u, password: p })
         });
+        
+        const cust = await api(`/api/customers/username/${encodeURIComponent(u)}`);
+        
+         sessionStorage.userId = cust.id;
+         sessionStorage.user   = cust.username;
+        
         }
         
         location = 'catalogue.html';
