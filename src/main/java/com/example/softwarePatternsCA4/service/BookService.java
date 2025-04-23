@@ -11,6 +11,7 @@ import com.example.softwarePatternsCA4.search.strategy.CategorySearchStrategy;
 import com.example.softwarePatternsCA4.search.strategy.PublisherSearchStrategy;
 import com.example.softwarePatternsCA4.search.strategy.TitleSearchStrategy;
 import com.example.softwarePatternsCA4.sort.strategy.SortByAuthorStrategy;
+import com.example.softwarePatternsCA4.sort.strategy.SortByCategoryStrategy;
 import com.example.softwarePatternsCA4.sort.strategy.SortByPriceStrategy;
 import com.example.softwarePatternsCA4.sort.strategy.SortByPublisherStrategy;
 import com.example.softwarePatternsCA4.sort.strategy.SortByTitleStrategy;
@@ -89,6 +90,8 @@ public class BookService implements BookAdminOps {
             strategy = new SortByAuthorStrategy();
         } else if ("publisher".equalsIgnoreCase(sortCriterion)) {
             strategy = new SortByPublisherStrategy();
+        } else if ("category".equalsIgnoreCase(sortCriterion)) {
+            strategy = new SortByCategoryStrategy();
         } else {
             // Default to sort by title
             strategy = new SortByTitleStrategy();
