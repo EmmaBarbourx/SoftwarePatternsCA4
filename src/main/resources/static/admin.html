@@ -12,8 +12,320 @@
 
 <body class="container py-4">
 
-    <h1>Admin Dashboard</h1> 
+    <h1 class="mb-4">Admin Dashboard</h1>
+    
+    <!-- Nav Tabs -->
+  <ul class="nav nav-tabs mb-3" id="admTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active"  data-bs-toggle="tab"
+              data-bs-target="#stockTab"   type="button">Stock</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link"          data-bs-toggle="tab"
+              data-bs-target="#custTab"    type="button">Customers</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link"          data-bs-toggle="tab"
+              data-bs-target="#orderTab"   type="button">Orders</button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+
+  <!-- Stock Tab -->
+  <div class="tab-pane fade show active" id="stockTab" role="tabpanel">
+
+    <div class="d-flex mb-2">
+      <input id="stockQuery" class="form-control w-25"
+             placeholder="Search …">
+             
+             <select id="stockCrit" class="form-select w-auto ms-2">
+      <option value="title" selected>Title</option>
+      <option value="author">Author</option>
+      <option value="publisher">Publisher</option>
+      <option value="category">Category</option>
+    </select>
+             
+      <button class="btn btn-outline-secondary ms-2"
+              onclick="searchStock()">Search</button>
+              
+        <button class="btn btn-secondary ms-1"
+            onclick="clearStock()">Clear</button>      
+
+      <select id="stockSort" class="form-select w-auto ms-3"
+              onchange="sortStock()">
+         <option value="">Sort by…</option>
+      <option value="title">Title</option>
+      <option value="author">Author</option>
+      <option value="publisher">Publisher</option>
+      <option value="category">Category</option>
+      <option value="price">Price</option>
+      <option value="stockLevel">Stock</option>
+    </select>
+
+      <button class="btn btn-success ms-auto"
+              onclick="openBookModal()">+ Add Book</button>
+    </div>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Title</th><th>Author</th><th>Publisher</th>
+        <th>Category</th><th>Price</th><th>Stock</th>
+        <th style="width:140px"></th>
+        </tr>
+      </thead>
+      <tbody id="stockRows"></tbody>
+    </table>
+  </div>
+
+  <!-- Customer Tab -->
+  <div class="tab-pane fade" id="custTab" role="tabpanel">
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+        <th>Username</th><th>Email</th><th>Points</th><th>Address</th><th>Payment</th>
+        </tr>
+      </thead>
+      <tbody id="custRows"></tbody>
+    </table>
+  </div>
+
+  <!-- Orders Tab -->
+  <div class="tab-pane fade" id="orderTab" role="tabpanel">
+    <h5 class="mb-3" id="ordHead">Select a customer…</h5>
+    <table class="table table-striped">
+      <thead>
+        <tr><th>#</th><th>Date</th><th>Total (€)</th>
+            <th>Pts Redeemed</th><th>Pts Earned</th></tr>
+      </thead>
+      <tbody id="ordRows"></tbody>
+    </table>
+  </div>
+
+  </div> 
+
+  <!-- Book Modal (add / edit) -->
+  <div class="modal fade" id="bookModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="bookModTitle">New Book</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input id="bmId" type="hidden">
+          <div class="mb-2"><input id="bmTitle" class="form-control" placeholder="Title"></div>
+          <div class="mb-2"><input id="bmAuthor" class="form-control" placeholder="Author"></div>
+          <div class="mb-2"><input id="bmPublisher" class="form-control" placeholder="Publisher"></div>
+          <div class="mb-2"><input id="bmCategory" class="form-control" placeholder="Category"></div>
+          <div class="mb-2"><input id="bmIsbn" class="form-control" placeholder="ISBN"></div>
+           <div class="mb-2"><input id="bmImg" class="form-control" placeholder="Cover image URL"></div>
+          <div class="mb-2"><input id="bmPrice" type="number" min="0" step="0.01"
+                                   class="form-control" placeholder="Price (€)"></div>
+          <div class="mb-2"><input id="bmStock" type="number" min="0"
+                                   class="form-control" placeholder="Stock level"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" onclick="saveBook()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal fade" id="ordModal" tabindex="-1"><div class="modal-dialog modal-lg">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">Order #<span id="omId"></span></h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+      <p>Date: <span id="omDate"></span></p>
+      <ul id="omItems" class="list-group mb-2"></ul>
+      <p class="fw-bold text-end">Total €<span id="omTot"></span></p>
+      <p class="text-end text-muted">
+        Redeemed <span id="omRed"></span> pts • Earned <span id="omEarn"></span> pts
+      </p>
+    </div>
+  </div>
+</div></div>
+     
     
     <script src="app.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+  
+  let stock    = [];
+  let customers= [];
+  let custSel  = null;   // selected customer id
+
+  
+  const bookModal = new bootstrap.Modal('#bookModal');
+  const ordModal  = new bootstrap.Modal('#ordModal'); 
+
+  
+  loadStock();
+  loadCustomers();
+
+  // Stock Functions 
+  async function loadStock(){
+    stock = await api('/api/books');
+    renderStock(stock);
+  }
+function renderStock(list){
+  byId('stockRows').innerHTML = list.map(b => `
+    <tr>
+      <td>${b.title}</td>
+      <td>${b.author}</td>
+      <td>${b.publisher}</td>
+      <td>${b.category || ''}</td>
+      <td>€${b.price.toFixed(2)}</td>
+      <td>${b.stockLevel}</td>
+      <td class="text-end">
+        <button class="btn btn-sm btn-outline-secondary me-1"
+                onclick="openBookModal(${b.id})">Edit</button>
+        
+        <button class="btn btn-sm btn-outline-primary me-1"
+                onclick="adjustStock(${b.id},-1)">-1</button>
+        <button class="btn btn-sm btn-outline-primary"
+                onclick="adjustStock(${b.id}, 1)">+1</button>
+      </td>
+    </tr>`).join('');
+}
+
+  function searchStock(){
+  const crit = byId('stockCrit').value;
+  const q    = byId('stockQuery').value.trim().toLowerCase();
+  if (!q){ renderStock(stock); return; }
+  renderStock(
+      stock.filter(b => String(b[crit]).toLowerCase().includes(q))
+  );
+}
+
+function clearStock(){
+  byId('stockQuery').value = '';
+  byId('stockCrit').value  = 'title';
+  byId('stockSort').value  = '';
+  renderStock(stock);
+}
+  function sortStock(){
+  const crit = byId('stockSort').value;
+  if (!crit) return;
+  stock.sort((a,b)=>
+     (crit==='price'||crit==='stockLevel')
+       ? a[crit]-b[crit]
+       : String(a[crit]).localeCompare(String(b[crit]))
+  );
+  renderStock(stock);
+}
+
+  //add / edit modal
+  function openBookModal(id){
+    const isEdit = !!id;
+    byId('bookModTitle').textContent = isEdit ? 'Edit Book' : 'New Book';
+    if (isEdit){
+      const b = stock.find(x=>x.id===id);
+      byId('bmId').value      = b.id;
+      byId('bmTitle').value   = b.title;
+      byId('bmAuthor').value  = b.author;
+      byId('bmPublisher').value=b.publisher;
+      byId('bmCategory').value= b.category;
+      byId('bmIsbn').value    = b.isbnNumber;
+      byId('bmImg').value=b.associatedImage||'';  
+      byId('bmPrice').value   = b.price;
+      byId('bmStock').value   = b.stockLevel;
+    } else {
+  // clear every input when it’s “New Book”
+  ['bmId','bmTitle','bmAuthor','bmPublisher','bmCategory',
+   'bmIsbn','bmImg','bmPrice','bmStock']           
+    .forEach(id => byId(id).value = '');
+}
+bookModal.show();
+  }
+
+  async function saveBook(){
+    const id   = byId('bmId').value;
+    const data = {
+      title       : byId('bmTitle').value.trim(),
+      author      : byId('bmAuthor').value.trim(),
+      publisher   : byId('bmPublisher').value.trim(),
+      category    : byId('bmCategory').value.trim(),
+      isbnNumber  : byId('bmIsbn').value.trim(),
+      associatedImage: byId('bmImg').value.trim(),
+      price       : +byId('bmPrice').value,
+      stockLevel  : +byId('bmStock').value
+    };
+    if (id){   // update
+      await api(`/api/admin/books/${id}`, withAuth({
+               method:'PUT', body: JSON.stringify(data)}));
+    } else {   // add
+      await api('/api/admin/books', withAuth({
+               method:'POST', body: JSON.stringify(data)}));
+    }
+    bookModal.hide();
+    await loadStock();
+  }
+
+  
+  async function adjustStock(id, delta){
+    await api(`/api/admin/books/${id}/stock?delta=${delta}`,
+              withAuth({ method:'POST' }));
+    await loadStock();
+  }
+
+  // Customer Functions 
+  async function loadCustomers(){
+    customers = await api('/api/admin/books/customers', withAuth());
+    byId('custRows').innerHTML = customers.map(c => `
+      <tr style="cursor:pointer"
+          onclick="selectCustomer(${c.id})">
+        <td>${c.username}</td>
+        <td>${c.emailAddress}</td>
+        <td>${c.loyaltyPoints}</td>
+        <td>${c.shippingAddress}</td>
+        <td>${c.paymentMethod}</td>
+      </tr>`).join('');
+  }
+
+  async function selectCustomer(cid){
+    custSel = cid;
+    const c = customers.find(x=>x.id===cid);
+    document.querySelector('button[data-bs-target="#orderTab"]').click();
+    byId('ordHead').textContent = `Orders – ${c.username}`;
+
+    const orders = await api(
+      `/api/admin/books/customers/${cid}/orders`, withAuth());
+
+    byId('ordRows').innerHTML = orders.map(o => `
+  <tr style="cursor:pointer" onclick="showOrder(${o.id})">
+    <td>${o.id}</td>                                         
+    <td>${new Date(o.orderDate).toLocaleDateString()}</td>   
+    <td>€${o.totalCost.toFixed(2)}</td>                      
+    <td>${o.loyaltyPointsRedeemed}</td>                     
+    <td>${o.loyaltyPointsEarned}</td>                       
+  </tr>`).join('');
+  }
+  
+  async function showOrder(oid){
+  const o = await api(`/api/orders/${oid}`, withAuth());
+  byId('omId').textContent    = o.id;
+  byId('omDate').textContent = new Date(o.orderDate).toLocaleString();
+  byId('omTot').textContent  = o.totalCost.toFixed(2);
+  byId('omRed').textContent  = o.loyaltyPointsRedeemed;
+  byId('omEarn').textContent = o.loyaltyPointsEarned;
+  byId('omItems').innerHTML  = o.orderItems.map(it=>`
+      <li class="list-group-item d-flex justify-content-between">
+        <span>${it.book.title} × ${it.quantity}</span>
+        <span>€${(it.unitPrice*it.quantity).toFixed(2)}</span>
+      </li>`).join('');
+  ordModal.show();
+}
+  
+  </script>
+    
 </body>
 </html>

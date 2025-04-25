@@ -77,6 +77,11 @@ public class ReviewService {
     public Optional<Review> getReviewById(int id) {
         return reviewRepository.findById(id);
     }
+    
+    // Retrieve a review by book ID
+    public List<Review> getReviewsByBookId(int bookId){
+        return reviewRepository.findByBookId(bookId);
+    }
 
     // Update an existing review
     public Review updateReview(int id, Review updatedReview) {
@@ -93,16 +98,6 @@ public class ReviewService {
                         ? updatedReview.getReviewDate()
                         : LocalDateTime.now()
                     );
-                    
-                    int custId = updatedReview.getCustomer().getId();
-                    Customer realCust = customerRepository.findById(custId)
-                        .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + custId));
-                    r.setCustomer(realCust);
-
-                    int bookId = updatedReview.getBook().getId();
-                    Book realBook = bookRepository.findById(bookId)
-                        .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
-                    r.setBook(realBook);
                     
                     Review saved = reviewRepository.save(r);
 

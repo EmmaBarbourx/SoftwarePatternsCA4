@@ -20,4 +20,6 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     @Transactional         
     @Query("DELETE FROM Review r WHERE r.book.id = :bookId")
     void deleteByBookId(@Param("bookId") int bookId);
+	
+	List<Review> findByBookId(int bookId);
 }

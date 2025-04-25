@@ -78,10 +78,12 @@
         
          sessionStorage.userId = cust.id;
          sessionStorage.user   = cust.username;
+         sessionStorage.userPwd = p;
+         sessionStorage.currentCustomer = JSON.stringify(cust); 
         
         }
         
-        location = 'catalogue.html';
+        location = admin ? 'admin.html' : 'catalogue.html';
       } catch (err) {
         // bad creds → clear storage + show message
         sessionStorage.clear();

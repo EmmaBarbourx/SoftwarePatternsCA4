@@ -2,6 +2,8 @@ package com.example.softwarePatternsCA4.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -18,6 +20,7 @@ public class ShoppingCart {
     
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name="shopping_cart_id")
+    @JsonManagedReference
     private List<ShoppingCartItem> items;
 
 

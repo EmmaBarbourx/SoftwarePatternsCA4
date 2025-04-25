@@ -12,8 +12,59 @@
 
 <body class="container py-4">
 
-    <h1>Order Placed</h1> 
+    <h1 class="mb-4">Thank you for your purchase!</h1>
+    
+    <div id="card" class="card shadow-sm d-none">
+    <div class="card-body">
+      <h5 class="card-title">Order #<span id="ordId"></span></h5>
+
+      <ul id="itemList" class="list-group mb-3"></ul>
+
+      <p class="fw-bold text-end mb-1">
+        Grand total: €<span id="tot"></span>
+      </p>
+      <p class="text-end text-success">
+        Loyalty points earned: <span id="pts"></span>
+      </p>
+
+      <a href="catalogue.html" class="btn btn-primary">Continue shopping</a>
+    </div>
+  </div>
+
+  <p id="msg" class="text-danger"></p>
+    
     
     <script src="app.js"></script>
+    
+     <script>
+    const id = new URLSearchParams(location.search).get('orderId');
+
+    if (!id) {
+      byId('msg').textContent = 'No order id supplied.';
+    } else {
+      load(id);
+    }
+
+    async function load(orderId){
+      try{
+        const o = await api(`/api/orders/${orderId}`);
+
+        byId('ordId').textContent = o.id;
+        byId('tot').textContent   = o.totalCost.toFixed(2);
+        byId('pts').textContent   = o.loyaltyPointsEarned;
+
+        const lis = o.orderItems.map(it => `
+          <li class="list-group-item d-flex justify-content-between">
+            <span>${it.book.title} × ${it.quantity}</span>
+            <span>€${(it.unitPrice * it.quantity).toFixed(2)}</span>
+          </li>`).join('');
+        byId('itemList').innerHTML = lis;
+
+        byId('card').classList.remove('d-none');
+      }catch(err){
+        byId('msg').textContent = err.message;
+      }
+    }
+  </script>
 </body>
 </html>

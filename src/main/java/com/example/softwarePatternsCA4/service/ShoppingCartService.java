@@ -35,9 +35,19 @@ public class ShoppingCartService {
     // Update a shopping cart
     public ShoppingCart saveCart(ShoppingCart cart) {
         // Load the Customer from the database
-        Customer fullCustomer = customerRepository.findById(cart.getCustomer().getId())
+    	int custId = cart.getCustomer().getId();
+    	
+    	// If this customer already has a cart, just return it
+        Optional<ShoppingCart> existing =
+            shoppingCartRepository.findByCustomerId(custId);
+        if (existing.isPresent()) {
+            return existing.get();               
+        }
+    	
+    	
+        Customer fullCustomer = customerRepository.findById(custId)
             .orElseThrow(() -> new IllegalArgumentException(
-                "No customer with id=" + cart.getCustomer().getId()));
+                "No customer with id=" + custId));
 
         // Attach it to the cart
         cart.setCustomer(fullCustomer);

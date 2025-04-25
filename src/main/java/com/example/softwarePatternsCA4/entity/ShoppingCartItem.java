@@ -1,5 +1,7 @@
 package com.example.softwarePatternsCA4.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,6 +17,7 @@ public class ShoppingCartItem {
 
     // Each item belongs to a ShoppingCart
     @ManyToOne
+    @JsonBackReference 
     private ShoppingCart shoppingCart;
 
     // Reference to the Book being added to the cart

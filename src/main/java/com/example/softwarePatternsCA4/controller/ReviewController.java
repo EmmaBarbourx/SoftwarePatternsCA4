@@ -29,9 +29,12 @@ public class ReviewController {
 
     // Get all reviews
     @GetMapping
-    public ResponseEntity<List<Review>> getAllReviews() {
-        List<Review> reviews = reviewService.getAllReviews();
-        return ResponseEntity.ok(reviews);
+    public ResponseEntity<List<Review>> getAllReviews(@RequestParam(required = false) Integer bookId) {
+    	List<Review> list = (bookId == null)
+                ? reviewService.getAllReviews()
+                : reviewService.getReviewsByBookId(bookId);
+
+        return ResponseEntity.ok(list);
     }
     
     // Add a new review

@@ -10,10 +10,199 @@
           href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 </head>
 
-<body class="container py-4">
+<body class="container py-4" onload="loadCart()">
 
-    <h1>Your Cart</h1> 
+<a href="catalogue.html" class="btn btn-link mb-3">&larr; back to catalogue</a>
+    <h1 class="mb-4">Your cart</h1>
+    
+    <!-- cart table -->
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Title</th><th class="text-center">Qty</th>
+        <th class="text-end">Subtotal (€)</th><th></th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+    
+    <tfoot>
+    <tr>
+      <th colspan="2" class="text-end">Items total</th>
+      <th class="text-end" id="itemsTotal">0.00</th><th></th>
+    </tr>
+    <tr class="text-muted">
+      <th colspan="2" class="text-end">- Promo discount</th>
+      <th class="text-end" id="promoDiscount">0.00</th><th></th>
+    </tr>
+    <tr class="text-muted">
+      <th colspan="2" class="text-end">- Points discount</th>
+      <th class="text-end" id="pointsDiscount">0.00</th><th></th>
+    </tr>
+    <tr class="fw-bold">
+      <th colspan="2" class="text-end">Grand total</th>
+      <th class="text-end" id="grandTotal">0.00</th><th></th>
+    </tr>
+  </tfoot>
+</table>
+  
+  <!-- input to redeem points -->
+<div class="input-group mb-2" style="max-width:260px;">
+  <span class="input-group-text">Redeem</span>
+  <input id="points" type="number" min="0" step="1"
+         class="form-control" 
+         oninput="recalcTotals()">
+  <span class="input-group-text">pts</span>
+</div>
+<p class="small text-muted">
+  You have <span id="availPts">0</span> pts
+  (worth €<span id="ptsValue">0.00</span>).
+</p>
+
+  <button class="btn btn-success" onclick="checkout()">Checkout</button>
+  <p id="msg" class="text-danger mt-3"></p>
     
     <script src="app.js"></script>
+    
+    <script>
+    
+
+const PTS_WORTH   = 0.10;     // value of one point 
+const THRESHOLD_1 = 100, RATE_1 = 0.05;   // 5 % if > €100
+const THRESHOLD_2 = 200, RATE_2 = 0.10;   // 10 % if > €200
+    
+    
+    let cartId   = sessionStorage.cartId;
+    let cartData = null;                 // will hold the cart returned by backend
+    let userPts   = 0;
+    
+    async function loadCart(){
+      if(!cartId) return showMsg('Your cart is empty.');
+
+      try{
+        cartData = await api(`/api/carts/${cartId}`);
+        
+        const me = await api(`/api/customers/username/${sessionStorage.user}`);
+
+        userPts = me.loyaltyPoints || 0;
+        sessionStorage.currentCustomer = JSON.stringify(me); 
+        byId('availPts').textContent = userPts
+        byId('ptsValue').textContent = (userPts * PTS_WORTH).toFixed(2);
+        
+        cartData.items?.length
+           ? render(cartData.items)
+           : showMsg('Your cart is empty.');
+      }catch(err){showMsg(err.message);}
+    }
+
+    function render(items){
+  const body = items.map(it => `
+    <tr>
+      <td>${it.book.title}</td>
+
+      <td class="text-center">
+        <button class="btn btn-sm btn-outline-secondary me-1"
+                onclick="updateQty(${it.book.id}, ${it.quantity - 1})">−</button>
+        ${it.quantity}
+        <button class="btn btn-sm btn-outline-secondary ms-1"
+                onclick="updateQty(${it.book.id}, ${it.quantity + 1})">+</button>
+      </td>
+
+      <td class="text-end">
+        ${(it.book.price * it.quantity).toFixed(2)}
+      </td>
+
+      <td>
+        <button class="btn btn-sm btn-outline-danger"
+                onclick="removeItem(${it.book.id})">✕</button>
+      </td>
+    </tr>`).join('');
+  byId('rows').innerHTML = body;
+      
+      const itemsTotal = items.reduce((s,i)=>s+i.book.price*i.quantity,0);
+      byId('itemsTotal').textContent = itemsTotal.toFixed(2);
+  
+      const promo = calcPromoDiscount(itemsTotal);
+      byId('promoDiscount').textContent = promo.toFixed(2);
+
+  
+  recalcTotals();
+}
+
+
+   function calcPromoDiscount(total){
+      if (total > THRESHOLD_2) return total * RATE_2;
+      if (total > THRESHOLD_1) return total * RATE_1;
+      return 0;
+    }
+
+
+   function recalcTotals(){
+      const ptsField   = byId('points');
+      const pts        = +ptsField.value || 0;
+
+      const itemsTotal = +byId('itemsTotal').textContent;
+      const promo      = +byId('promoDiscount').textContent;
+      const base       = itemsTotal - promo;
+
+      /* max 50 % of base, rounded down to whole points */
+      const maxPts = Math.min(userPts, Math.floor((base*0.5)/PTS_WORTH));
+
+      if (pts < 0 || pts > maxPts){
+          ptsField.classList.add('is-invalid');
+          showMsg(`Enter 0 – ${maxPts} points`);
+          byId('pointsDiscount').textContent = '0.00';
+          byId('grandTotal').textContent     = base.toFixed(2);
+          return;
+      }
+      ptsField.classList.remove('is-invalid');
+      showMsg('');
+
+      const ptsDisc = pts * PTS_WORTH;
+      byId('pointsDiscount').textContent = ptsDisc.toFixed(2);
+      byId('grandTotal').textContent     = (base - ptsDisc).toFixed(2);
+    }
+    
+    //change quantity 
+async function updateQty(bookId, newQty){
+  if (newQty < 1) return removeItem(bookId);      
+
+  await api(`/api/carts/${cartId}/items/${bookId}?quantity=${newQty}`, {
+        method: 'PUT'
+  });
+  await loadCart();                               // refresh table + totals
+}
+
+    
+    async function removeItem(bookId){
+      if(!confirm('Remove this item?')) return;
+      await api(`/api/carts/${cartId}/items/${bookId}`, { method:'DELETE' });
+      await loadCart();                      // refresh table + total
+    }
+
+    //checkout 
+    async function checkout(){
+  if(!cartId){ showMsg('Nothing to checkout.'); return; }
+
+  const pts = +byId('points').value || 0;          
+
+  try {
+  // one POST, capture the returned order
+  const savedOrder = await api(
+    `/api/orders/checkout/${cartId}?redeemPoints=${pts}`,
+    { method: 'POST' }
+  );
+
+  alert('Order placed!  Thank you');
+  delete sessionStorage.cartId;               // clear cart for next time
+  location = `success.html?orderId=${savedOrder.id}`;
+} catch (err) {
+  showMsg(err.message);
+}
+}
+
+    
+    function showMsg(t){ byId('msg').textContent = t; }
+  </script>
+    
 </body>
 </html>
